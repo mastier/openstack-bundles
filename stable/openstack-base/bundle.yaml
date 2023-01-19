@@ -10,14 +10,23 @@ name: openstack-base
 series: focal
 variables:
   openstack-origin: &openstack-origin cloud:focal-yoga
-  data-port: &data-port to-be-set
+  data-port: &data-port br-ex:enp0s25
   osd-devices: &osd-devices /dev/sdb /dev/vdb
   expected-osd-count: &expected-osd-count 3
   expected-mon-count: &expected-mon-count 3
 machines:
   '0':
+    constraints: zones=maaszone1 tags=os-nodes
   '1':
+    constraints: zones=maaszone2 tags=os-nodes
   '2':
+    constraints: zones=maaszone3 tags=os-nodes
+  '3':
+    constraints: zones=maaszone1 tags=ceph-nodes
+  '4':
+    constraints: zones=maaszone2 tags=ceph-nodes
+  '5':
+    constraints: zones=maaszone3 tags=ceph-nodes
 relations:
 - - nova-compute:amqp
   - rabbitmq-server:amqp
@@ -164,9 +173,9 @@ applications:
       osd-devices: *osd-devices
       source: *openstack-origin
     to:
-    - '0'
-    - '1'
-    - '2'
+    - '3'
+    - '4'
+    - '5'
   ceph-radosgw:
     annotations:
       gui-x: '850'

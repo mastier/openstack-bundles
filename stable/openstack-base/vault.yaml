@@ -1,0 +1,5 @@
+applications:
+  vault:
+    options:
+      totally-unsecure-auto-unlock: true
+      auto-generate-root-ca-cert: true
