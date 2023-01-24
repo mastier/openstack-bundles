@@ -27,6 +27,13 @@ machines:
     constraints: zones=maaszone2 tags=ceph-nodes
   '5':
     constraints: zones=maaszone3 tags=ceph-nodes
+  '6':
+    constraints: zones=maaszone3 tags=spare-nodes
+  '7':
+    constraints: zones=maaszone3 tags=spare-nodes
+  '8':
+    constraints: zones=maaszone1 tags=spare-nodes
+
 relations:
 - - nova-compute:amqp
   - rabbitmq-server:amqp
@@ -146,6 +153,8 @@ relations:
   - ceph-radosgw:certificates
 - - vault:certificates
   - mysql-innodb-cluster:certificates
+
+
 applications:
   ceph-mon:
     annotations:
@@ -407,3 +416,8 @@ applications:
     num_units: 1
     to:
     - lxd:0
+
+
+
+
+

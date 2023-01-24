@@ -1,0 +1,86 @@
+variables:
+  openstack-origin: &openstack-origin cloud:focal-yoga
+
+relations:
+- - nova-compute-cell2:neutron-plugin
+  - ovn-chassis:nova-compute
+- - nova-compute-cell2:image-service
+  - glance:image-service
+- - nova-compute-cell2:cloud-credentials
+  - keystone:identity-credentials
+- - nova-cell-controller-cell2:identity-credentials
+  - keystone:identity-credentials
+- - nova-cloud-controller:amqp-cell
+  - rabbitmq-server-nova-cell2:amqp
+- - nova-cloud-controller:nova-cell-api
+  - nova-cell-controller-cell2:nova-cell-compute
+- - nova-cloud-controller:shared-db-cell
+  - nova-cell-controller-cell2-mysql-router:shared-db
+- - nova-compute-cell2:amqp
+  - rabbitmq-server-nova-cell2:amqp
+- - nova-cell-controller-cell2:amqp
+  - rabbitmq-server-nova-cell2:amqp
+- - nova-cell-controller-cell2:shared-db
+  - nova-cell-controller-cell2-mysql-router:shared-db
+- - nova-cell-controller-cell2-mysql-router:db-router
+  - mysql-innodb-cluster-cell2:db-router
+- - nova-cell-controller-cell2:cloud-compute
+  - nova-compute-cell2:cloud-compute
+#- - ceilometer:amqp-listener
+#  - rabbitmq-server-nova-cell2::amqp
+#- - ceilometer-agent:nova-ceilometer
+#  - nova-compute-cell2::nova-ceilometer
+- - vault:certificates
+  - mysql-innodb-cluster-cell2:certificates
+
+applications:
+  nova-cell-controller-cell2:
+    annotations:
+      gui-x: '35'
+      gui-y: '1270'
+    charm: ch:nova-cell-controller
+    channel: yoga/stable
+    num_units: 1
+    options:
+      network-manager: Neutron
+      openstack-origin: *openstack-origin
+      cell-name: "cell2"
+    to:
+    - lxd:6
+  nova-compute-cell2:
+    annotations:
+      gui-x: '190'
+      gui-y: '890'
+    charm: ch:nova-compute
+    channel: yoga/stable
+    num_units: 3
+    options:
+      config-flags: default_ephemeral_format=ext4
+      enable-live-migration: true
+      enable-resize: true
+      migration-auth-type: ssh
+      openstack-origin: *openstack-origin
+    to:
+    - '6'
+    - '7'
+    - '8'
+  mysql-innodb-cluster-cell2:
+    charm: ch:mysql-innodb-cluster
+    options:
+      max-connections: 1000
+    channel: 8.0/stable
+    num_units: 3
+    to:
+    - lxd:6
+    - lxd:7
+    - lxd:8
+  nova-cell-controller-cell2-mysql-router:
+    charm: ch:mysql-router
+    channel: 8.0/stable
+  rabbitmq-server-nova-cell2:
+    charm: ch:rabbitmq-server
+    num_units: 1
+    charm: ch:rabbitmq-server
+    channel: 3.9/stable
+    to:
+    - lxd:6
